@@ -1,4 +1,4 @@
-# Predicting Generalization and Uncertainty by Shattering a Neural Network
+# Predicting Generalization and Uncertainty by Shattering a Neural Network [[arXiv]](http://arxiv.org/abs/2106.08365)
 
 This repository contains code for training classification models, running unreliability quantification experiments using subfunctions and other methods, and printing tables and figures.
 
