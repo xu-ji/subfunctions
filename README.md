@@ -105,12 +105,6 @@ Assumes you have run the experiments.
 
 `python -m scripts.analysis.print_results`
 
-# Render AUROC graphs
-
-Assumes you have run the experiments.
-
-`python -m scripts.analysis.plot_graphs`
-
 # Qualitative figures
 
 * Half-moons figures (fig. 1)
