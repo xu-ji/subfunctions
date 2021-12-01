@@ -12,9 +12,9 @@ data_pretty = {"cifar10": "CIFAR10", "cifar100": "CIFAR100", "svhn": "SVHN"}
 
 verbose = False
 print_chosen_variables = False
-print_original_accs = True
+print_original_accs = False
 
-methods = ["explicit_density", "gaussian_process", "class_distance", "margin", "entropy", "max_response", "subfunctions"]
+methods = ["explicit_density", "gaussian_process", "class_distance", "margin", "entropy", "max_response", "dropout", "tack_et_al", "subfunctions"]
 task_metrics = {"in_distr": ["AUCEA", "AUROC"], "out_of_distr": "AUROC"}
 suff = ""
 
@@ -25,7 +25,9 @@ methods_pretty = {
   "margin": "Margin",
   "class_distance": "Class distance",
   "explicit_density": "Residual flows density",
-  "gaussian_process": "GP"
+  "gaussian_process": "GP",
+  "tack_et_al": "Cluster distance",
+  "dropout": "MC dropout"
 }
 
 ood_strings = {"cifar10": defaultdict(list), "cifar100": defaultdict(list)} # data -> model, method string -> results string (made of ood datasets)
@@ -79,6 +81,9 @@ def print_results():
     best_score_per_col = defaultdict(int)
     best_method_per_col = defaultdict(str)
 
+    best_score_per_col_2nd = defaultdict(int)
+    best_method_per_col_2nd = defaultdict(str)
+
     for method in methods: # row
       print_grid[method].append("%s" % methods_pretty[method])
 
@@ -112,17 +117,26 @@ def print_results():
             print_grid[method].append("%.3f $\pm$ %.0E %s" % (
               result, Decimal("%.16f" % metric_results.std()), note))
 
-            if result > best_score_per_col[col_ind]:
+            if result > best_score_per_col[col_ind]: # is it better than top
+              best_score_per_col_2nd[col_ind] = best_score_per_col[col_ind] # move top one down
+              best_method_per_col_2nd[col_ind] = best_method_per_col[col_ind]
+
               best_score_per_col[col_ind] = result
               best_method_per_col[col_ind] = method
+
+            elif result > best_score_per_col_2nd[col_ind]: # wasn't better than top, might be better than 2nd
+              best_score_per_col_2nd[col_ind] = result
+              best_method_per_col_2nd[col_ind] = method
+
           else:
             print_grid[method].append("-")
 
           col_ind += 1
 
     if verbose:
-      print("best_method_per_col")
+      print("best methods per col")
       print(best_method_per_col)
+      print(best_method_per_col_2nd)
 
     # print table including bolding the best in each column
     for method in methods:
@@ -131,8 +145,10 @@ def print_results():
         if col_ind > 0:
           printstr += " & "
 
-        if best_method_per_col[col_ind] == method: printstr += " \\textbf{%s} " % col
-        else: printstr += col
+        if (best_method_per_col[col_ind] == method) or (best_method_per_col_2nd[col_ind] == method):
+          printstr += " \\textbf{%s} " % col
+        else:
+          printstr += col
 
       printstr += "\\\\"
       print(printstr)
@@ -162,6 +178,9 @@ def print_results():
     print_grid = defaultdict(list)
     best_score_per_col = defaultdict(int)
     best_method_per_col = defaultdict(str)
+
+    best_score_per_col_2nd = defaultdict(int)
+    best_method_per_col_2nd = defaultdict(str)
 
     for method in methods: # row
       print_grid[method].append("%s" % methods_pretty[method])
@@ -194,17 +213,30 @@ def print_results():
             print_grid[method].append("%.3f $\pm$ %.0E %s" % (
               result, Decimal("%.16f" % metric_results.std()), note))
 
-            if result > best_score_per_col[col_ind]:
+            #if result > best_score_per_col[col_ind]:
+            #  best_score_per_col[col_ind] = result
+            #  best_method_per_col[col_ind] = method
+
+            if result > best_score_per_col[col_ind]: # is it better than top
+              best_score_per_col_2nd[col_ind] = best_score_per_col[col_ind] # move top one down
+              best_method_per_col_2nd[col_ind] = best_method_per_col[col_ind]
+
               best_score_per_col[col_ind] = result
               best_method_per_col[col_ind] = method
+
+            elif result > best_score_per_col_2nd[col_ind]: # wasn't better than top, might be better than 2nd
+              best_score_per_col_2nd[col_ind] = result
+              best_method_per_col_2nd[col_ind] = method
+
           else:
             print_grid[method].append("-")
 
           col_ind += 1
 
     if verbose:
-      print("best_method_per_col")
+      print("best methods per col")
       print(best_method_per_col)
+      print(best_method_per_col_2nd)
 
     # print table including bolding the best in each column
     for method in methods:
@@ -213,7 +245,7 @@ def print_results():
         if col_ind > 0:
           printstr += " & "
 
-        if best_method_per_col[col_ind] == method:
+        if (best_method_per_col[col_ind] == method) or (best_method_per_col_2nd[col_ind] == method):
           printstr += " \\textbf{%s} " % col
         else:
           printstr += col

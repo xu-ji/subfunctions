@@ -29,7 +29,6 @@ python train_img.py --data cifar10 --actnorm True --save experiments/cifar10
 python train_img.py --data cifar100 --actnorm True --save experiments/cifar100
 
 You can either train models from scratch as above
-Or use my pretrained models (linked in README)
 Or download the cifar10 model from the original residual flows authors and just reformat the file 
 with the xu-ji train_img.py script with SAVE_ONLY set to True
 

@@ -424,3 +424,50 @@ def eval_and_store(config, unreliability, corrects, method_variables, store_fnam
   print("AUCEA %s, AUROC %s" % (AUCEA, AUROC))
   print("Saved results to %s" % results_fname)
   print("Saved plots to %s" % plots_fname)
+
+
+def compute_aucea(config, unreliability, corrects):
+  unreliability_finite = unreliability[unreliability.isfinite()]
+  if unreliability_finite.shape[0] == 0:
+    print("All test samples had unseen patterns. Aborting.")
+    exit(0)
+
+  min_unrel = unreliability_finite.min().item()
+  max_unrel = unreliability_finite.max().item()
+  print("Threshold range: %s" % str((min_unrel, max_unrel)))
+
+  # loop through min and max finite bounds, and also +/- infinity to tie graphs to [0, 1] corners
+  coverages = np.zeros(config.threshold_divs + 1 + 2, dtype=np.float)
+  effective_acc_or_precisions = np.zeros(config.threshold_divs + 1 + 2, dtype=np.float)
+
+  for t_i in range(config.threshold_divs + 1 + 2):
+    if t_i == 0:
+      t = -np.inf
+    elif t_i <= config.threshold_divs + 1:
+      t = min_unrel + ((t_i - 1) / float(config.threshold_divs)) * (max_unrel - min_unrel)
+    else:
+      assert t_i == config.threshold_divs + 2
+      t = np.inf
+
+    accepts = unreliability <= t
+
+    # 2 variables for prediction: whether it was accepted, and whether it was correct
+    tp = (accepts * corrects).sum().item()
+    fp = (accepts * (~corrects)).sum().item()
+    tn = ((~accepts) * (~corrects)).sum().item()
+    fn = ((~accepts) * corrects).sum().item()
+
+    coverage = (tp + fp) / float(tp + fp + tn + fn)  # how many we accepted
+    effective_acc_or_precision = tp / max(1., float(
+      tp + fp))  # how many were correct model predictions within the accepted
+
+    # should hit 0 for *just under* first t (first t close to 0). Max: 1, for last t.
+    coverages[t_i] = coverage
+
+    # should hit 0 for *just under* first t (first t close to 0). Max: 1, if out of all accepted,
+    #  all were correct. Probably will (for small t), but may not hit.
+    effective_acc_or_precisions[t_i] = effective_acc_or_precision
+
+  AUCEA = compute_area(xs=coverages, ys=effective_acc_or_precisions, mode="under")
+
+  return AUCEA

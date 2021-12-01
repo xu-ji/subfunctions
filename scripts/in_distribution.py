@@ -70,6 +70,16 @@ def in_distribution():
   _ = subparsers.add_parser("ensemble_var")
   _ = subparsers.add_parser("ensemble_max_response")
 
+  tack_et_al_config = subparsers.add_parser("tack_et_al")
+  tack_et_al_config.add_argument("--tack_et_al_split_batch", type=int, default=10)
+
+  bergman_et_al_config = subparsers.add_parser("bergman_et_al")
+  bergman_et_al_config.add_argument("--bergman_et_al_M", type=int, default=50)
+
+  dropout_config = subparsers.add_parser("dropout")
+  dropout_config.add_argument("--dropout_ps", type=float, nargs="+", default=[0.1, 0.25, 0.5, 0.75, 0.9])
+  dropout_config.add_argument("--dropout_iterations", type=int, default=10)
+  
   config = config.parse_args()
   print("Config: %s" % config)
 

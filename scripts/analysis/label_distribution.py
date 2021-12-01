@@ -6,6 +6,7 @@ from util.general import *
 from util.data import *
 from util.methods import *
 from scripts.analysis.print_results import data_pretty
+from scipy.stats import spearmanr
 
 
 CIFAR100_LABELS_LIST = [
@@ -105,6 +106,13 @@ def qualitative():
   _ = subparsers.add_parser("ensemble_var")
   _ = subparsers.add_parser("ensemble_max_response")
 
+  tack_et_al_config = subparsers.add_parser("tack_et_al")
+  tack_et_al_config.add_argument("--tack_et_al_split_batch", type=int, default=10)
+
+  dropout_config = subparsers.add_parser("dropout")
+  dropout_config.add_argument("--dropout_ps", type=float, nargs="+", default=[0.2, 0.5, 0.8])
+  dropout_config.add_argument("--dropout_iterations", type=int, default=10)
+
   config = config.parse_args()
   print("Config: %s" % config)
 
@@ -169,6 +177,7 @@ def qualitative():
   ranks_names = []
   medians = []
   colours = []
+  semantic_dist = []
   #orig_colours = [np.array(hsv_to_rgb(hue, 0.6, 0.7)) for hue in np.linspace(0., 1., num=2)]
   orig_colours = ["tab:purple", "tab:green"]
 
@@ -206,9 +215,13 @@ def qualitative():
     ranks_names.append(c_name)
     medians.append(np.median(c_ranks))
     colours.append(orig_colours[int(c_name in CIFAR100_LIKE_CIFAR10)])
+    semantic_dist.append(1 - int(c_name in CIFAR100_LIKE_CIFAR10))
 
   medians = np.array(medians)
   ordering = np.argsort(medians) # small (reliable) to unreliable)
+  semantic_dist = np.array(semantic_dist) # 0 is similar, 1 dissimilar
+
+  corr = spearmanr(medians.astype(np.float), semantic_dist.astype(np.float), axis=None)[0]
 
   all_ranks = [all_ranks[i] for i in ordering]
   ranks_names = [ranks_names[i] for i in ordering]
@@ -220,7 +233,7 @@ def qualitative():
   medianprops = dict(linestyle='-.', linewidth=3, color='black')
 
   fig, ax = plt.subplots(1, figsize=(12, 3))
-  #ax.set_title("")
+  ax.set_title("Corr. green vs reliability rank: %.3f" % corr)
   bplot = ax.boxplot(all_ranks, labels=ranks_names, patch_artist=True, medianprops=medianprops)
 
   for item in ['boxes', 'whiskers', 'fliers', 'caps']: #  'medians',

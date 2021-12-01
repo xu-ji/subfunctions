@@ -9,6 +9,9 @@ from .explicit_density import *
 from .ensemble_subfunctions import *
 from .entropy import *
 from .margin import *
+from .tack_et_al import *
+from .bergman_et_al import *
+from .dropout import *
 
 if not AVOID_GP_LIBRARIES:
   from .gaussian_process import *

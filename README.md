@@ -1,6 +1,6 @@
-# Predicting Unreliable Predictions by Shattering a Neural Network [[arXiv]](http://arxiv.org/abs/2106.08365)
+# Predicting Generalization and Uncertainty by Shattering a Neural Network
 
-This repository contains code for training classification models, running unreliability quantification experiments using subfunctions and other methods, and printing tables and figures.
+This repository contains code for training classification models, running unreliability quantification experiments, and printing tables and figures.
 
 System settings are defined in `scripts/global_constants.py`. You should change these according to your needs. Turn `PRINT_COMMANDS_ONLY` on to do a dry run first.
 
@@ -19,8 +19,6 @@ All commands are given below.
 
 # Train classification models
 `python -m scripts.slurm.train_models`
-
-Or, download pre-trained models [here](https://www.robots.ox.ac.uk/~xuji/subfunctions/public_models.zip).
 
 # Run unreliability experiments
 
@@ -84,6 +82,22 @@ Assumes you have trained the classification models.
 
 * OOD:
 `python -m scripts.slurm.cifar.out_of_distribution.gaussian_process`
+
+**Cluster distance**
+
+* In-distribution:
+`python -m scripts.slurm.cifar.in_distribution.tack_et_al`
+
+* OOD:
+`python -m scripts.slurm.cifar.out_of_distribution.tack_et_al`
+
+**MC dropout**
+
+* In-distribution:
+`python -m scripts.slurm.cifar.in_distribution.dropout`
+
+* OOD:
+`nohup python -m scripts.slurm.cifar.out_of_distribution.dropout`
 
 # Print tables
 
